@@ -11,12 +11,15 @@ import {
   ActivityIndicator,
   Alert
  } from "react-native";
+import { reload } from 'firebase/auth';
+import { BaseAnimationBuilder } from 'react-native-reanimated';
 
 const Login = ({navigation}) => {
 
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
+  const [connectionError, setConnectionError] = useState(null);
 
   const userLogin = () => {
     if (email === '' || email == null || password === '' || password == null){
@@ -25,7 +28,6 @@ const Login = ({navigation}) => {
       setIsLoading(true);
       signInWithEmailAndPassword(auth, email, password)
       .then((res)=>{
-        console.log(res);
         console.log('User logged in successfully');
         setIsLoading(false);
         setEmail(null);
@@ -33,7 +35,9 @@ const Login = ({navigation}) => {
         navigation.navigate('Dashboard')
       })
       .catch((error)=>{
-        console.error(error);
+        setIsLoading(false);
+        setConnectionError(error.message);
+        console.error(error.message);
       })
     }
   }
@@ -47,7 +51,11 @@ const Login = ({navigation}) => {
   }
 
   return (
-    <View style={styles.container}>  
+    <View style={styles.container}>
+      {
+        connectionError && 
+        <Text>{connectionError}</Text>
+      }
       <TextInput
         style={styles.inputStyle}
         placeholder="Email"
@@ -107,6 +115,10 @@ const Login = ({navigation}) => {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff'
+  },
+  errorMessage:{
+    color: 'red',
+    fontWeight: 'bolder'
   }
 });
 

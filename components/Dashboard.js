@@ -9,6 +9,10 @@ import {
   StyleSheet,  
   Button,
  } from "react-native";
+import Bonsai from './Bonsai/Bonsai';
+
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 const Dashboard = ({ navigation }) => {
 
@@ -23,7 +27,7 @@ const Dashboard = ({ navigation }) => {
     .catch((error)=>console.error(error));
   }
 
-  return (
+  const Home = () => {
     <View style={styles.container}>
       <Text style = {styles.textStyle}>
         Hello, {displayName}
@@ -34,6 +38,17 @@ const Dashboard = ({ navigation }) => {
         onPress={() => logOut()}
       />
     </View>
+  }
+
+  const Tab = createBottomTabNavigator();
+
+  return (
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Bonsai List" component={Bonsai} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
  }
 
