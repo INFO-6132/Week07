@@ -10,6 +10,7 @@ import {
   Button,
  } from "react-native";
 import BonsaiList from './Bonsai/Bonsai-List';
+import AddBonsai from './Bonsai/Bonsai-Add';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -46,6 +47,7 @@ const Dashboard = ({ navigation }) => {
       <Tab.Navigator>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Bonsai List" component={BonsaiList} />
+        <Tab.Screen name="Add Bonsai" component={AddBonsai} />
       </Tab.Navigator>
   );
  }
