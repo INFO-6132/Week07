@@ -1,5 +1,8 @@
 //https://docs.expo.dev/versions/latest/sdk/map-view/
-import React, { useState } from 'react';
+//https://admshng.medium.com/how-to-integrate-google-maps-into-react-native-via-expo-2021-9e45f79e2f7b
+//https://docs.expo.dev/versions/latest/sdk/location/
+//https://github.com/react-native-maps/react-native-maps
+import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
 import { Button, Stack, Surface } from '@react-native-material/core';
 import { TextInput, Switch, Portal, Modal, Provider, ActivityIndicator, MD2Colors } from 'react-native-paper';
@@ -7,8 +10,9 @@ import { db } from '../../firebase-config';
 import { onValue, push, remove, ref, update, updateDoc } from 'firebase/database';
 import * as ImagePicker from "expo-image-picker"
 import { firebase } from '../../firebase-config';
-import MapView from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import Bonsai from './Bonsai';
+import * as Location from 'expo-location';
 
 const dbRef = ref(db, '/bonsais');
 
@@ -30,19 +34,74 @@ const AddBonsai = () => {
   const [dialogVisibile, setDialogVisible] = useState(false);
   const [dialogContent, setDialogContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let currentLocation = await Location.getCurrentPositionAsync({});
+      setLocation({
+        latitude:currentLocation.coords.latitude,
+        longitude: currentLocation.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421
+      });
+      setNewBonsai({...newBonsai, location: location });
+    })();
+      checkNewBonsai();
+  }, []);
+
+  let locationText = 'Waiting..';
+  if (errorMsg) {
+    locationText = errorMsg;
+  } else if (location) {
+    locationText = JSON.stringify(location);
+  }
+
+  const onRegionChange = (x) => {
+    setLocation(x);
+    setNewBonsai({...newBonsai, location: x });
+  }
 
   const checkNewBonsai = () => {
     setFormComplete(true);
-    if(
-      newBonsai.name == ''
-      || newBonsai.description == ''
-      || newBonsai.location == ''
-      || newBonsai.period == ''
-      || newBonsai.period < 1000
-    ) setFormComplete(false)
+    let markupIssues = [];
+    if (newBonsai.name == '') { 
+      setFormComplete(false); 
+      markupIssues.push('name is empty');
+    }
+    if (newBonsai.description == '') { 
+      setFormComplete(false); 
+      markupIssues.push('description is empty');
+    }
+    if (newBonsai.period == '') { 
+      setFormComplete(false); 
+      markupIssues.push('period is empty');
+    }
+    if (newBonsai.period < 1000) { 
+      setFormComplete(false); 
+      markupIssues.push('period is less than 1000');
+    }
+    if (newBonsai.location == '') { 
+      setFormComplete(false); 
+      markupIssues.push('location is empty');
+    }
+    let issues = markupIssues.reduce((acc, cur)=> acc + ' - ' + cur, 'Issues: ');
+    if (issues.length === 0) setFormComplete(true);
+    console.log(issues);
+    if (formComplete) {
+      console.log('form is complete');
+    }
   }
 
   const addNewBonsai = () => {
+    console.log('adding new bonsai');
     setSaving(true);
     const newBonsaiId = push(dbRef, {
       thirsty: newBonsai.thirsty,
@@ -69,6 +128,8 @@ const AddBonsai = () => {
   }
 
   const pickImage = async () => {
+
+    console.log('pick image');
 
     // Ask the user for the permission to access the media library 
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -112,6 +173,7 @@ const AddBonsai = () => {
   }
 
   const uploadImage = async (bonsaiId) => {
+    console.log('uploadImage');
     const blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.onload = function () {
@@ -206,6 +268,7 @@ const AddBonsai = () => {
                 placeholder={newBonsai.name}
                 onChangeText={
                   text=>{
+                    console.log(text);
                     setNewBonsai({...newBonsai, name: text});
                     checkNewBonsai();
                   }
@@ -218,11 +281,12 @@ const AddBonsai = () => {
                 placeholder={newBonsai.description}
                 onChangeText={
                   text=>{
+                    console.log(text);
                     setNewBonsai({...newBonsai, description: text});
                     checkNewBonsai();
                   }
                 }
-                />
+              />
               <View style={styles.row}>
               {
                 image && 
@@ -267,16 +331,15 @@ const AddBonsai = () => {
                 style={{width:"100%"}}
                 mode="outlined"
                 label="Location"
-                value={newBonsai.location}
-                onChangeText={
-                  text=>{
-                    setNewBonsai({...newBonsai, location: text});
-                    checkNewBonsai();
-                  }
-                }
+                value={JSON.stringify(location)}
                 />
                 <View style={styles.container}>
-                  <MapView style={styles.map} />
+                  <MapView 
+                      style={styles.map}
+                      provider={PROVIDER_GOOGLE}
+                      showsUserLocation={true}
+                      region={location}
+                      onRegionChange={onRegionChange} />
                 </View>
               <View>
                 <View style={{marginTop:5}}>

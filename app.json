@@ -18,7 +18,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.BonsaiShop",
+      "config": {
+        "googleMapsApiKey": "AIzaSyA-Jn0Fo9nuFQrNAan9vVb4M40u-WLCv8g"
+      }
     },
     "android": {
       "adaptiveIcon": {
