@@ -2,6 +2,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
+import { getStorage } from "firebase/storage";
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -16,16 +17,13 @@ import 'firebase/compat/storage';
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCxYHZktxhHjS8nTvzQ5aqOhhgZmAwMcw0",
-  authDomain: "info3170-bonsai-shop.firebaseapp.com",
-  databaseURL: "https://info3170-bonsai-shop-default-rtdb.firebaseio.com",
-  projectId: "info3170-bonsai-shop",
-  storageBucket: "info3170-bonsai-shop.appspot.com",
-  messagingSenderId: "483407942231",
-  appId: "1:483407942231:web:801f76b24ab44306cd4912",
-  measurementId: "G-7Y4KDNDZHF"
+  apiKey: "AIzaSyCoKd57rYjIKicHLJs5CcnCFDrlgerseIY",
+  authDomain: "info6132-week07.firebaseapp.com",
+  projectId: "info6132-week07",
+  storageBucket: "info6132-week07.appspot.com",
+  messagingSenderId: "1057853694483",
+  appId: "1:1057853694483:web:24754f22a8e70a62c615e6"
 };
-
 
 // Initialize Firebase
 if (!firebase.apps.length){
@@ -34,11 +32,13 @@ if (!firebase.apps.length){
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 const auth = getAuth(app);
 
 export { 
   db, 
-  auth, 
+  auth,
+  storage, 
   firebase, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,

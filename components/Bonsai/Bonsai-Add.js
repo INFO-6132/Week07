@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, ScrollView, Image, Dimensions } from 'react-native';
 import { Button, Stack, Surface } from '@react-native-material/core';
 import { TextInput, Switch, Portal, Modal, Provider, ActivityIndicator, MD2Colors } from 'react-native-paper';
-import { db } from '../../firebase-config';
+import { db, storage } from '../../firebase-config';
 import { onValue, push, remove, ref, update, updateDoc } from 'firebase/database';
 import * as ImagePicker from "expo-image-picker"
 import { firebase } from '../../firebase-config';
@@ -67,38 +67,10 @@ const AddBonsai = () => {
   const onRegionChange = (x) => {
     setLocation(x);
     setNewBonsai({...newBonsai, location: x });
+    checkNewBonsai();
   }
 
-  const checkNewBonsai = () => {
-    setFormComplete(true);
-    let markupIssues = [];
-    if (newBonsai.name == '') { 
-      setFormComplete(false); 
-      markupIssues.push('name is empty');
-    }
-    if (newBonsai.description == '') { 
-      setFormComplete(false); 
-      markupIssues.push('description is empty');
-    }
-    if (newBonsai.period == '') { 
-      setFormComplete(false); 
-      markupIssues.push('period is empty');
-    }
-    if (newBonsai.period < 1000) { 
-      setFormComplete(false); 
-      markupIssues.push('period is less than 1000');
-    }
-    if (newBonsai.location == '') { 
-      setFormComplete(false); 
-      markupIssues.push('location is empty');
-    }
-    let issues = markupIssues.reduce((acc, cur)=> acc + ' - ' + cur, 'Issues: ');
-    if (issues.length === 0) setFormComplete(true);
-    console.log(issues);
-    if (formComplete) {
-      console.log('form is complete');
-    }
-  }
+  const checkNewBonsai = () => {return true;}
 
   const addNewBonsai = () => {
     console.log('adding new bonsai');
@@ -111,20 +83,23 @@ const AddBonsai = () => {
       imageUrl: newBonsai.imageUrl,
       location: newBonsai.location
     }).key;
-    // Upload image
-    if(image){
-      uploadImage(newBonsaiId);
-      console.log(newBonsaiId);
-    }
-    setNewBonsai({
-      id: null,
-      name: '',
-      description: '',
-      period: 3000,
-      thirsty: true,
-      imageUrl: '',
-      location: '',
-    });
+    if (newBonsaiId) {
+      setSaving(false);
+      // Upload image
+      if(image){
+        uploadImage(newBonsaiId);
+        console.log(newBonsaiId);
+      }
+      setNewBonsai({
+        id: null,
+        name: '',
+        description: '',
+        period: 3000,
+        thirsty: true,
+        imageUrl: '',
+        location: '',
+      });
+    } 
   }
 
   const pickImage = async () => {
@@ -148,6 +123,7 @@ const AddBonsai = () => {
     console.log('result from image picker', result);
     if(!result.cancelled) {
       setImage(result.uri);
+      checkNewBonsai();
     }
   };
 
@@ -169,6 +145,7 @@ const AddBonsai = () => {
     if (!result.cancelled) {
       setImage(result.uri);
       console.log(result.uri);
+      checkNewBonsai();
     }
   }
 
@@ -186,7 +163,7 @@ const AddBonsai = () => {
       xhr.open('GET', image, true);
       xhr.send(null);
     });
-    const refStorage = firebase.storage().ref().child(`Pictures/Image1`)
+    const refStorage = firebase.storage().ref().child('Pictures/' + bonsaiId);
     const snapshot = refStorage.put(blob);
     snapshot.on(firebase.storage.TaskEvent.STATE_CHANGED,
       ()=>{
@@ -211,7 +188,8 @@ const AddBonsai = () => {
             setNewBonsai(bonsaiModel);
             setDialogContent('Bonsai saved successfully!');
             setDialogVisible(true);
-            setSaving(false);         
+            setSaving(false);
+            checkNewBonsai();         
           })
           .catch((error)=>{
             console.log('Errror on saving image:', error);
@@ -265,12 +243,11 @@ const AddBonsai = () => {
                 style={{width:"100%"}}
                 mode="outlined"
                 label="Name"
-                placeholder={newBonsai.name}
+                value={newBonsai.name}
                 onChangeText={
                   text=>{
                     console.log(text);
                     setNewBonsai({...newBonsai, name: text});
-                    checkNewBonsai();
                   }
                 }
                 />
@@ -278,12 +255,11 @@ const AddBonsai = () => {
                 style={{width:"100%"}}
                 mode="outlined"
                 label="Description"
-                placeholder={newBonsai.description}
+                value={newBonsai.description}
                 onChangeText={
                   text=>{
                     console.log(text);
                     setNewBonsai({...newBonsai, description: text});
-                    checkNewBonsai();
                   }
                 }
               />
@@ -321,7 +297,6 @@ const AddBonsai = () => {
                   onChangeText={
                     text=>{
                       setNewBonsai({...newBonsai, period: text});
-                      checkNewBonsai();
                     }
                   }
                 />
@@ -341,16 +316,13 @@ const AddBonsai = () => {
                       region={location}
                       onRegionChange={onRegionChange} />
                 </View>
-              <View>
-                <View style={{marginTop:5}}>
-                  <Button
+                  
+            </Surface>
+            <Button
                     title="Add new bonsai"
                     onPress={addNewBonsai}
                     color="green"
-                    disabled={!formComplete}/>
-                </View>
-              </View>
-            </Surface>
+                    disabled={false}/>
         </Stack>
       </ScrollView>
     </Provider>

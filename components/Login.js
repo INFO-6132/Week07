@@ -77,7 +77,7 @@ const Login = ({navigation}) => {
       />   
       <Text 
         style={styles.loginText}
-        onPress={() => navigation.navigate('SignUp')}>
+        onPress={() => navigation.navigate('Signup')}>
         Don't have account? Click here to signup
       </Text>                          
     </View>
