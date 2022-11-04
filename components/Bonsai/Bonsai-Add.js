@@ -57,17 +57,9 @@ const AddBonsai = () => {
       checkNewBonsai();
   }, []);
 
-  let locationText = 'Waiting..';
-  if (errorMsg) {
-    locationText = errorMsg;
-  } else if (location) {
-    locationText = JSON.stringify(location);
-  }
-
   const onRegionChange = (x) => {
     setLocation(x);
     setNewBonsai({...newBonsai, location: x });
-    checkNewBonsai();
   }
 
   const checkNewBonsai = () => {return true;}
@@ -189,7 +181,6 @@ const AddBonsai = () => {
             setDialogContent('Bonsai saved successfully!');
             setDialogVisible(true);
             setSaving(false);
-            checkNewBonsai();         
           })
           .catch((error)=>{
             console.log('Errror on saving image:', error);
@@ -220,10 +211,10 @@ const AddBonsai = () => {
                 <Text>{dialogContent}</Text>
             </Modal>
           </Portal>
-      <ScrollView
-        styles={styles.container}
-        contentContainerStyle={styles.contentContainerStyle}
-      >
+        <ScrollView
+          styles={styles.container}
+          contentContainerStyle={styles.contentContainerStyle}
+        >
         
         <Stack>
           <Surface
